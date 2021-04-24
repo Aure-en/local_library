@@ -24,4 +24,14 @@ BookInstanceSchema
     return DateTime.fromJSDate(this.due_back).toLocaleString(DateTime.DATE_MED);
   });
 
+BookInstanceSchema
+  .virtual('due_back_yyyy_mm_dd')
+  .get(function () {
+    const year = this.due_back.getFullYear();
+    let month = this.due_back.getMonth() + 1;
+    if (month < 10) month = `0${month}`;
+    const day = this.due_back.getDate();
+    return `${year}-${month}-${day}`;
+  });
+
 module.exports = mongoose.model('BookInstance', BookInstanceSchema);
