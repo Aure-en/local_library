@@ -3,6 +3,11 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const compression = require('compression');
+const helmet = require('helmet');
+
+// setup mongoose
+const mongoose = require('mongoose');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -10,10 +15,8 @@ const catalogRouter = require('./routes/catalog');
 
 const app = express();
 
-// setup mongoose
-const mongoose = require('mongoose');
-
-const mongoDB = 'mongodb+srv://Aurelie:BWMWpZyhceNb97@cluster0.t6dqf.mongodb.net/local_library?retryWrites=true&w=majority';
+const dev_db_url = 'mongodb+srv://Aurelie:BWMWpZyhceNb97@cluster0.t6dqf.mongodb.net/local_library?retryWrites=true&w=majority';
+const mongoDB = process.env.MONGODB_URI || dev_db_url;
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -22,12 +25,14 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+app.use(helmet());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(compression());
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/catalog', catalogRouter);
